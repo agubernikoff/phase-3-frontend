@@ -13,6 +13,7 @@ import {
 import "./App.css";
 import DateTime from "./DateTime";
 
+// Get current date and format it correctly (YYYY-MM-DD)
 const date = new Date();
 function formatMonth(month) {
   console.log(month);
