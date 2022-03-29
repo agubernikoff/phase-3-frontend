@@ -5,10 +5,24 @@ import {
   Scheduler,
   DayView,
   Appointments,
+  Toolbar,
+  WeekView,
+  MonthView,
+  ViewSwitcher,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import "./App.css";
+import DateTime from "./DateTime";
 
-const currentDate = "2018-11-01";
+const date = new Date();
+function formatMonth(month) {
+  console.log(month);
+  if (month > 10) return month;
+  else return "0" + month;
+}
+const currentDate = `${date.getFullYear()}-${formatMonth(
+  date.getMonth() + 1
+)}-${date.getDate()}`;
+
 const schedulerData = [
   {
     startDate: "2018-11-01T09:45",
@@ -26,10 +40,18 @@ function App() {
   return (
     <div className="App">
       <header className="App-header"></header>
+      <DateTime />
       <Paper>
         <Scheduler data={schedulerData}>
-          <ViewState currentDate={currentDate} />
+          <ViewState
+            defaultCurrentDate={currentDate}
+            defaultCurrentViewName="Week"
+          />
           <DayView startDayHour={0} endDayHour={24} />
+          <WeekView startDayHour={0} endDayHour={24} />
+          <MonthView startDayHour={0} endDayHour={24} />
+          <Toolbar />
+          <ViewSwitcher />
           <Appointments />
         </Scheduler>
       </Paper>
