@@ -35,6 +35,16 @@ const schedulerData = [
     endDate: "2018-11-01T13:30",
     title: "Go to the gym",
   },
+  {
+    startDate: "2022-04-01T12:00",
+    endDate: "2022-04-01T13:30",
+    title: "Finish the Project",
+  },
+  {
+    startDate: "2022-03-31T22:00",
+    endDate: "2022-04-01T08:00",
+    title: "Sleep",
+  },
 ];
 
 function App() {
