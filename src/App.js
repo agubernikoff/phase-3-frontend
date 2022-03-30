@@ -56,20 +56,38 @@ const currentDate = `${date.getFullYear()}-${formatMonth(
 //   },
 // ];
 function formatAppt(jsonArr) {
-  console.log("called formatAppt")
   const formatted = jsonArr.map((json) => {
-    console.log(json.task_def)
     return {startDate: json.start,
     endDate: json.end,
     title: json.task_def.title,
+    id: json.id
     //"[propertyName: 'category:']": json.task_def.category,
-    "priority": json.task_def.priority
+    //"priority": json.task_def.priority
     //description: json.task_def.description,
     }
   });
-  console.log(formatted);
   return formatted;
 }
+function onEdit (e) {
+  console.log(e)
+  //call function to update an existing appointment
+  if (Object.keys(e)[0]=== "changed") {
+    console.log("yay changed")
+  }
+  //call function to delete appointment
+  if (Object.keys(e)[0]=== "deleted") {
+    console.log(e.deleted)
+    //commented out because this function isn't complete or tested
+    //deleteAppt(e.deleted)
+  }
+  //call function to post new appointment
+  if (Object.keys(e)[0]=== "added") {
+    console.log(e.added)
+    //commented out because this function isn't complete or tested
+    //postAppt(e.added)
+  }
+}
+
 
 function App() {
   //state variables
@@ -83,6 +101,28 @@ function App() {
       });
       
   }, []);
+
+  function deleteAppt(id) {
+    fetch(`http://localhost:9292/task_times/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  function postAppt(eObj) {
+    fetch("http://localhost:9292/task_times", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: eObj.title,
+      }),
+    })
+      .then((r) => r.json())
+      .then((tasks) => {
+        console.log(tasks)
+      });
+  }  
 
   return (
     <div className="App">
@@ -100,7 +140,7 @@ function App() {
           <Toolbar />
           <ViewSwitcher />
           <Appointments />
-          <EditingState onCommitChanges={(e)=>console.log(e)} />
+          <EditingState onCommitChanges={onEdit} />
           <EditRecurrenceMenu />
           <AppointmentTooltip />
           <AppointmentForm />
