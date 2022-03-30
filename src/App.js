@@ -19,6 +19,7 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 import "./App.css";
 import DateTime from "./DateTime";
+import { colors } from "@mui/material";
 
 // Get current date and format it correctly (YYYY-MM-DD)
 const date = new Date();
@@ -55,38 +56,18 @@ const currentDate = `${date.getFullYear()}-${formatMonth(
 //     title: "Sleep",
 //   },
 // ];
-function formatAppt(jsonArr) {
-  const formatted = jsonArr.map((json) => {
-    return {startDate: json.start,
-    endDate: json.end,
-    title: json.task_def.title,
-    id: json.id
+function formatAppt(jsonObj) {
+  const formatted = {startDate: jsonObj.startDate,
+    endDate: jsonObj.endDate,
+    title: jsonObj.task_def.title,
+    id: jsonObj.id
     //"[propertyName: 'category:']": json.task_def.category,
     //"priority": json.task_def.priority
     //description: json.task_def.description,
-    }
-  });
+    };
   return formatted;
 }
-function onEdit (e) {
-  console.log(e)
-  //call function to update an existing appointment
-  if (Object.keys(e)[0]=== "changed") {
-    console.log("yay changed")
-  }
-  //call function to delete appointment
-  if (Object.keys(e)[0]=== "deleted") {
-    console.log(e.deleted)
-    //commented out because this function isn't complete or tested
-    //deleteAppt(e.deleted)
-  }
-  //call function to post new appointment
-  if (Object.keys(e)[0]=== "added") {
-    console.log(e.added)
-    //commented out because this function isn't complete or tested
-    //postAppt(e.added)
-  }
-}
+
 
 
 function App() {
@@ -97,16 +78,70 @@ function App() {
     fetch("http://localhost:9292/task_times")
       .then((r) => r.json())
       .then((tasks) => {
-        setTaskTimes(formatAppt(tasks))
+        const formatArr = tasks.map((t) => formatAppt(t))
+        setTaskTimes(formatArr)
       });
       
   }, []);
 
+  function onEdit (e) {
+    console.log(e)
+    //call function to update an existing appointment
+    if (Object.keys(e)[0]=== "changed") {
+      console.log("yay changed")
+      patchAppt(e.changed)
+    }
+    //call function to delete appointment
+    if (Object.keys(e)[0]=== "deleted") {
+      console.log(e.deleted)
+      //commented out because this function isn't complete or tested
+      deleteAppt(e.deleted)
+    }
+    //call function to post new appointment
+    if (Object.keys(e)[0]=== "added") {
+      console.log(e.added)
+      //commented out because this function isn't complete or tested
+      postAppt(e.added)
+    }
+  }
+
   function deleteAppt(id) {
     fetch(`http://localhost:9292/task_times/${id}`, {
       method: "DELETE",
+    })
+    .then((r) => r.json())
+    .then((json) => {
+      const filtered = taskTimes.filter((task) => task.id!==id);
+      setTaskTimes(filtered);
     });
   }
+
+  function patchAppt(eObj) {
+    const id = Object.keys(eObj)[0];
+    console.log(eObj[id]);
+    fetch(`http://localhost:9292/task_times/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(eObj[id])
+    })
+    .then((r) => r.json())
+    .then((json) => { 
+      const updated = formatAppt(json);
+      console.log("updated:", updated)
+      const updatedArr = taskTimes.map((task) => {
+        console.log("taskid=",task.id, 'id=', id);
+        if (task.id == id) {
+          console.log("in if???")
+          return updated;
+        }
+        return task;
+      });
+      console.log(updatedArr);
+      setTaskTimes(updatedArr);
+    });   
+  };
 
   function postAppt(eObj) {
     fetch("http://localhost:9292/task_times", {
@@ -116,11 +151,16 @@ function App() {
       },
       body: JSON.stringify({
         title: eObj.title,
+        startDate: eObj.startDate,
+        endDate: eObj.endDate
       }),
     })
       .then((r) => r.json())
-      .then((tasks) => {
-        console.log(tasks)
+      .then((json) => {
+        console.log(json);
+        const newAppt = formatAppt(json);
+        console.log(newAppt);
+        setTaskTimes([...taskTimes, newAppt]);
       });
   }  
 
@@ -142,7 +182,7 @@ function App() {
           <Appointments />
           <EditingState onCommitChanges={onEdit} />
           <EditRecurrenceMenu />
-          <AppointmentTooltip />
+          <AppointmentTooltip showOpenButton showDeleteButton />
           <AppointmentForm />
           <DragDropProvider />
           <ConfirmationDialog />
