@@ -21,6 +21,7 @@ import {
 import "./App.css";
 import DateTime from "./DateTime";
 import { colors } from "@mui/material";
+import { RRule, RRuleSet, rrulestr } from "rrule";
 
 // Get current date and format it correctly (YYYY-MM-DD)
 const date = new Date();
@@ -100,7 +101,28 @@ function App() {
     }
     //call function to post new appointment
     if (Object.keys(e)[0] === "added") {
-      console.log(e.added);
+      console.log(
+        //invoke rrulstr on correctly formatted startDate + rRule to create a new rRule obj.
+        //invoke .all() to get every instance of the recurring event.
+        // map over that to correctly format the date.
+        // map over that to return an appropriately formatted task object
+        // CHECK CONSOLE AFTER CREATING A NEW TASK TO SEE RESULTS
+        rrulestr(
+          `DTSTART:${e.added.startDate
+            .toISOString()
+            .replace(/[^a-zA-Z0-9 ]/g, "")
+            .slice(0, -4)}Z\n${e.added.rRule}`.toString()
+        )
+          .all()
+          .map((date) => date.toISOString())
+          .map((date) => ({
+            startDate: date,
+            endDate:
+              date.slice(0, 11) + e.added.endDate.toISOString().slice(11),
+            title: e.added.title,
+            allDay: e.added.allDay,
+          }))
+      );
       //commented out because this function isn't complete or tested
       postAppt(e.added);
     }
