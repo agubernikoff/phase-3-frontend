@@ -1,8 +1,8 @@
 import * as React from "react";
 import Paper from "@mui/material/Paper";
-import { AllDayPanel } from '@devexpress/dx-react-grid-material-ui';
 import { ViewState, EditingState } from "@devexpress/dx-react-scheduler";
 import {
+  AllDayPanel,
   Scheduler,
   DayView,
   DateNavigator,
@@ -16,7 +16,7 @@ import {
   AppointmentTooltip,
   AppointmentForm,
   DragDropProvider,
-  ConfirmationDialog
+  ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import "./App.css";
 import DateTime from "./DateTime";
@@ -32,8 +32,6 @@ function formatMonth(month) {
 const currentDate = `${date.getFullYear()}-${formatMonth(
   date.getMonth() + 1
 )}-${date.getDate()}`;
-
-
 
 // const schedulerData = [
 //   {
@@ -58,21 +56,20 @@ const currentDate = `${date.getFullYear()}-${formatMonth(
 //   },
 // ];
 function formatAppt(jsonObj) {
-  console.log(jsonObj)
-  const formatted = {startDate: jsonObj.startDate,
+  console.log(jsonObj);
+  const formatted = {
+    startDate: jsonObj.startDate,
     endDate: jsonObj.endDate,
     title: jsonObj.task_def.title,
     id: jsonObj.id,
-    allDay: !!jsonObj.allDay
+    allDay: !!jsonObj.allDay,
     //"[propertyName: 'category:']": json.task_def.category,
     //"priority": json.task_def.priority
     //description: json.task_def.description,
-    };
-    console.log(formatted)
+  };
+  console.log(formatted);
   return formatted;
 }
-
-
 
 function App() {
   //state variables
@@ -82,31 +79,30 @@ function App() {
     fetch("http://localhost:9292/task_times")
       .then((r) => r.json())
       .then((tasks) => {
-        const formatArr = tasks.map((t) => formatAppt(t))
-        console.log("formatAArr:", formatArr)
-        setTaskTimes(formatArr)
+        const formatArr = tasks.map((t) => formatAppt(t));
+        console.log("formatAArr:", formatArr);
+        setTaskTimes(formatArr);
       });
-      
   }, []);
 
-  function onEdit (e) {
-    console.log(e)
+  function onEdit(e) {
+    console.log(e);
     //call function to update an existing appointment
-    if (Object.keys(e)[0]=== "changed") {
-      console.log("yay changed")
-      patchAppt(e.changed)
+    if (Object.keys(e)[0] === "changed") {
+      console.log("yay changed");
+      patchAppt(e.changed);
     }
     //call function to delete appointment
-    if (Object.keys(e)[0]=== "deleted") {
-      console.log(e.deleted)
+    if (Object.keys(e)[0] === "deleted") {
+      console.log(e.deleted);
       //commented out because this function isn't complete or tested
-      deleteAppt(e.deleted)
+      deleteAppt(e.deleted);
     }
     //call function to post new appointment
-    if (Object.keys(e)[0]=== "added") {
-      console.log(e.added)
+    if (Object.keys(e)[0] === "added") {
+      console.log(e.added);
       //commented out because this function isn't complete or tested
-      postAppt(e.added)
+      postAppt(e.added);
     }
   }
 
@@ -114,11 +110,11 @@ function App() {
     fetch(`http://localhost:9292/task_times/${id}`, {
       method: "DELETE",
     })
-    .then((r) => r.json())
-    .then((json) => {
-      const filtered = taskTimes.filter((task) => task.id!==id);
-      setTaskTimes(filtered);
-    });
+      .then((r) => r.json())
+      .then((json) => {
+        const filtered = taskTimes.filter((task) => task.id !== id);
+        setTaskTimes(filtered);
+      });
   }
 
   function patchAppt(eObj) {
@@ -129,27 +125,27 @@ function App() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(eObj[id])
+      body: JSON.stringify(eObj[id]),
     })
-    .then((r) => r.json())
-    .then((json) => { 
-      const updated = formatAppt(json);
-      console.log("updated:", updated)
-      const updatedArr = taskTimes.map((task) => {
-        console.log("taskid=",task.id, 'id=', id);
-        if (task.id == id) {
-          console.log("in if???")
-          return updated;
-        }
-        return task;
+      .then((r) => r.json())
+      .then((json) => {
+        const updated = formatAppt(json);
+        console.log("updated:", updated);
+        const updatedArr = taskTimes.map((task) => {
+          console.log("taskid=", task.id, "id=", id);
+          if (task.id == id) {
+            console.log("in if???");
+            return updated;
+          }
+          return task;
+        });
+        console.log(updatedArr);
+        setTaskTimes(updatedArr);
       });
-      console.log(updatedArr);
-      setTaskTimes(updatedArr);
-    });   
-  };
+  }
 
   function postAppt(eObj) {
-    console.log(eObj)
+    console.log(eObj);
     fetch("http://localhost:9292/task_times", {
       method: "POST",
       headers: {
@@ -162,7 +158,7 @@ function App() {
         const newAppt = formatAppt(json);
         setTaskTimes([...taskTimes, newAppt]);
       });
-  }  
+  }
 
   return (
     <div className="App">
