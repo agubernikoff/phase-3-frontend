@@ -101,13 +101,13 @@ function App() {
     }
     //call function to post new appointment
     if (Object.keys(e)[0] === "added") {
-      console.log(
+      if (e.added.rRule) {
         //invoke rrulstr on correctly formatted startDate + rRule to create a new rRule obj.
         //invoke .all() to get every instance of the recurring event.
         // map over that to correctly format the date.
         // map over that to return an appropriately formatted task object
         // CHECK CONSOLE AFTER CREATING A NEW TASK TO SEE RESULTS
-        rrulestr(
+        const a = rrulestr(
           `DTSTART:${e.added.startDate
             .toISOString()
             .replace(/[^a-zA-Z0-9 ]/g, "")
@@ -121,10 +121,14 @@ function App() {
               date.slice(0, 11) + e.added.endDate.toISOString().slice(11),
             title: e.added.title,
             allDay: e.added.allDay,
-          }))
-      );
+          }));
+        for (let i = 0; i < a.length; i++) {
+          postAppt(a[i]);
+        }
+        setTimeout(() => setTaskTimes([...taskTimes, ...a]), 300);
+      }
       //commented out because this function isn't complete or tested
-      postAppt(e.added);
+      else postAppt(e.added);
     }
   }
 
@@ -181,7 +185,7 @@ function App() {
         setTaskTimes([...taskTimes, newAppt]);
       });
   }
-
+  console.log(taskTimes);
   return (
     <div className="App">
       <header className="App-header"></header>
