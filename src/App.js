@@ -56,20 +56,29 @@ const currentDate = `${date.getFullYear()}-${formatMonth(
 //     title: "Sleep",
 //   },
 // ];
-function formatAppt(jsonObj) {
-  console.log(jsonObj);
-  const formatted = {
-    startDate: jsonObj.startDate,
-    endDate: jsonObj.endDate,
-    title: jsonObj.task_def.title,
-    id: jsonObj.id,
-    allDay: !!jsonObj.allDay,
-    //"[propertyName: 'category:']": json.task_def.category,
-    //"priority": json.task_def.priority
-    //description: json.task_def.description,
+function formatAppt(json) {
+  console.log("json passed to formatappt:",json);
+  let formattedArr = [];
+  for (let i=0; i<json.length; i++) {
+    for (let j=0; j<json[i].task_times.length; j++) {
+      console.log("in inner for loop")
+      const objToPush = {
+        startDate: json[i].task_times[j].startDate,
+        endDate: json[i].task_times[j].endDate,
+        title: json[i].title,
+        id: json[i].task_times[j].id,
+        allDay: !!json[i].task_times[j].allDay,
+        task_def_id: json[i].id
+      //"[propertyName: 'category:']": json.task_def.category,
+      //"priority": json.task_def.priority
+      //description: json.task_def.description,
+      };
+      console.log("objToPush:", objToPush);
+      formattedArr.push(objToPush);
+    };
   };
-  console.log(formatted);
-  return formatted;
+  console.log("formatted array!!!!!",formattedArr);
+  return formattedArr;
 }
 
 function App() {
@@ -80,7 +89,7 @@ function App() {
     fetch("http://localhost:9292/task_times")
       .then((r) => r.json())
       .then((tasks) => {
-        const formatArr = tasks.map((t) => formatAppt(t));
+        const formatArr = formatAppt(tasks);
         console.log("formatAArr:", formatArr);
         setTaskTimes(formatArr);
       });
@@ -119,13 +128,15 @@ function App() {
             startDate: date,
             endDate:
               date.slice(0, 11) + e.added.endDate.toISOString().slice(11),
-            title: e.added.title,
-            allDay: e.added.allDay,
+            // title: e.added.title,
+            // allDay: e.added.allDay,
           }));
-        for (let i = 0; i < recurringDates.length; i++) {
-          postAppt(recurringDates[i]);
-        }
-        setTimeout(() => setTaskTimes([...taskTimes, ...recurringDates]), 300);
+          const objToPost = {...e.added, recurringDates: recurringDates}
+          postAppt(objToPost);
+        // for (let i = 0; i < recurringDates.length; i++) {
+        //   postAppt(recurringDates[i]);
+        // }
+        // setTimeout(() => setTaskTimes([...taskTimes, ...recurringDates]), 300);
       }
       //commented out because this function isn't complete or tested
       else postAppt(e.added);
@@ -181,8 +192,9 @@ function App() {
     })
       .then((r) => r.json())
       .then((json) => {
-        const newAppt = formatAppt(json);
-        setTaskTimes([...taskTimes, newAppt]);
+        const newAppt = formatAppt([json]);
+        console.log('post new appt return',newAppt)
+        setTaskTimes([...taskTimes, ...newAppt]);
       });
   }
   console.log(taskTimes);
