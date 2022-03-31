@@ -1,5 +1,6 @@
 import * as React from "react";
 import Paper from "@mui/material/Paper";
+import { AllDayPanel } from '@devexpress/dx-react-grid-material-ui';
 import { ViewState, EditingState } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
@@ -57,14 +58,17 @@ const currentDate = `${date.getFullYear()}-${formatMonth(
 //   },
 // ];
 function formatAppt(jsonObj) {
+  console.log(jsonObj)
   const formatted = {startDate: jsonObj.startDate,
     endDate: jsonObj.endDate,
     title: jsonObj.task_def.title,
-    id: jsonObj.id
+    id: jsonObj.id,
+    allDay: !!jsonObj.allDay
     //"[propertyName: 'category:']": json.task_def.category,
     //"priority": json.task_def.priority
     //description: json.task_def.description,
     };
+    console.log(formatted)
   return formatted;
 }
 
@@ -79,6 +83,7 @@ function App() {
       .then((r) => r.json())
       .then((tasks) => {
         const formatArr = tasks.map((t) => formatAppt(t))
+        console.log("formatAArr:", formatArr)
         setTaskTimes(formatArr)
       });
       
@@ -144,22 +149,17 @@ function App() {
   };
 
   function postAppt(eObj) {
+    console.log(eObj)
     fetch("http://localhost:9292/task_times", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        title: eObj.title,
-        startDate: eObj.startDate,
-        endDate: eObj.endDate
-      }),
+      body: JSON.stringify(eObj),
     })
       .then((r) => r.json())
       .then((json) => {
-        console.log(json);
         const newAppt = formatAppt(json);
-        console.log(newAppt);
         setTaskTimes([...taskTimes, newAppt]);
       });
   }  
@@ -179,6 +179,7 @@ function App() {
           <MonthView startDayHour={0} endDayHour={24} />
           <Toolbar />
           <ViewSwitcher />
+          <AllDayPanel />
           <Appointments />
           <EditingState onCommitChanges={onEdit} />
           <EditRecurrenceMenu />
