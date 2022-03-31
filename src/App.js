@@ -107,7 +107,7 @@ function App() {
         // map over that to correctly format the date.
         // map over that to return an appropriately formatted task object
         // CHECK CONSOLE AFTER CREATING A NEW TASK TO SEE RESULTS
-        const a = rrulestr(
+        const recurringDates = rrulestr(
           `DTSTART:${e.added.startDate
             .toISOString()
             .replace(/[^a-zA-Z0-9 ]/g, "")
@@ -122,10 +122,10 @@ function App() {
             title: e.added.title,
             allDay: e.added.allDay,
           }));
-        for (let i = 0; i < a.length; i++) {
-          postAppt(a[i]);
+        for (let i = 0; i < recurringDates.length; i++) {
+          postAppt(recurringDates[i]);
         }
-        setTimeout(() => setTaskTimes([...taskTimes, ...a]), 300);
+        setTimeout(() => setTaskTimes([...taskTimes, ...recurringDates]), 300);
       }
       //commented out because this function isn't complete or tested
       else postAppt(e.added);
