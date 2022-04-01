@@ -273,9 +273,9 @@ function App() {
       style={renderPriority(data.priority)}
     >
       {children}
-      <h4 style={{ color: "black", textAlign: "center" }}>
+      <p style={{ color: "black", textAlign: "center" }}>
         <strong>Category:</strong> {data.category}
-      </h4>
+      </p>
       <p style={{ color: "black", textAlign: "center" }}>
         <strong>Description:</strong> {data.description}
       </p>
