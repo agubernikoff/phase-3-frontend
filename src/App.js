@@ -22,6 +22,8 @@ import "./App.css";
 import DateTime from "./DateTime";
 import { colors } from "@mui/material";
 import { RRule, RRuleSet, rrulestr } from "rrule";
+import { style } from "@mui/system";
+import PriorityGuide from "./PriorityGuide";
 
 // Get current date and format it correctly (YYYY-MM-DD)
 const date = new Date();
@@ -56,28 +58,50 @@ const currentDate = `${date.getFullYear()}-${formatMonth(
 //     title: "Sleep",
 //   },
 // ];
+function renderCategory(category) {
+  switch (category) {
+    case 1:
+      return "Focused Work";
+    case 2:
+      return "Being a Human";
+    case 3:
+      return "Outdoor Activity";
+    case 4:
+      return "Hobby";
+    case 5:
+      return "Socializing";
+    case 6:
+      return "Learning";
+    case 7:
+      return "Physical Activity";
+    default:
+      return "nothings";
+  }
+}
 function formatAppt(json) {
-  console.log("json passed to formatappt:",json);
+  console.log("json passed to formatappt:", json);
   let formattedArr = [];
-  for (let i=0; i<json.length; i++) {
-    for (let j=0; j<json[i].task_times.length; j++) {
-      console.log("in inner for loop")
+  for (let i = 0; i < json.length; i++) {
+    for (let j = 0; j < json[i].task_times.length; j++) {
+      console.log("in inner for loop");
       const objToPush = {
         startDate: json[i].task_times[j].startDate,
         endDate: json[i].task_times[j].endDate,
         title: json[i].title,
         id: json[i].task_times[j].id,
         allDay: !!json[i].task_times[j].allDay,
-        task_def_id: json[i].id
-      //"[propertyName: 'category:']": json.task_def.category,
-      //"priority": json.task_def.priority
-      //description: json.task_def.description,
+        task_def_id: json[i].id,
+        //"[propertyName: 'category:']": json.task_def.category,
+        priority: json[i].priority_id,
+        rRule: json[i].rRule,
+        category: renderCategory(json[i].category_id),
+        description: json[i].description,
       };
       console.log("objToPush:", objToPush);
       formattedArr.push(objToPush);
-    };
-  };
-  console.log("formatted array!!!!!",formattedArr);
+    }
+  }
+  console.log("formatted array!!!!!", formattedArr);
   return formattedArr;
 }
 
@@ -110,36 +134,38 @@ function App() {
     }
     //call function to post new appointment
     if (Object.keys(e)[0] === "added") {
-      if (e.added.rRule) {
-        //invoke rrulstr on correctly formatted startDate + rRule to create a new rRule obj.
-        //invoke .all() to get every instance of the recurring event.
-        // map over that to correctly format the date.
-        // map over that to return an appropriately formatted task object
-        // CHECK CONSOLE AFTER CREATING A NEW TASK TO SEE RESULTS
-        const recurringDates = rrulestr(
-          `DTSTART:${e.added.startDate
-            .toISOString()
-            .replace(/[^a-zA-Z0-9 ]/g, "")
-            .slice(0, -4)}Z\n${e.added.rRule}`.toString()
-        )
-          .all()
-          .map((date) => date.toISOString())
-          .map((date) => ({
-            startDate: date,
-            endDate:
-              date.slice(0, 11) + e.added.endDate.toISOString().slice(11),
-            // title: e.added.title,
-            // allDay: e.added.allDay,
-          }));
-          const objToPost = {...e.added, recurringDates: recurringDates}
-          postAppt(objToPost);
-        // for (let i = 0; i < recurringDates.length; i++) {
-        //   postAppt(recurringDates[i]);
-        // }
-        // setTimeout(() => setTaskTimes([...taskTimes, ...recurringDates]), 300);
-      }
+      // if (e.added.rRule) {
+      //   console.log(e.added);
+      //   //invoke rrulstr on correctly formatted startDate + rRule to create a new rRule obj.
+      //   //invoke .all() to get every instance of the recurring event.
+      //   // map over that to correctly format the date.
+      //   // map over that to return an appropriately formatted task object
+      //   // CHECK CONSOLE AFTER CREATING A NEW TASK TO SEE RESULTS
+      //   const recurringDates = rrulestr(
+      //     `DTSTART:${e.added.startDate
+      //       .toISOString()
+      //       .replace(/[^a-zA-Z0-9 ]/g, "")
+      //       .slice(0, -4)}Z\n${e.added.rRule}`.toString()
+      //   )
+      //     .all()
+      //     .map((date) => date.toISOString())
+      //     .map((date) => ({
+      //       startDate: date,
+      //       endDate:
+      //         date.slice(0, 11) + e.added.endDate.toISOString().slice(11),
+      //       title: e.added.title,
+      //       // allDay: e.added.allDay,
+      //       // rRule: e.added.rRule,
+      //     }));
+      //   const objToPost = { ...e.added, recurringDates: recurringDates };
+      //   postAppt(objToPost);
+      //   // for (let i = 0; i < recurringDates.length; i++) {
+      //   //   postAppt(recurringDates[i]);
+      //   // }
+      //   // setTimeout(() => setTaskTimes([...taskTimes, ...recurringDates]), 300);
+      // }
       //commented out because this function isn't complete or tested
-      else postAppt(e.added);
+      postAppt(e.added);
     }
   }
 
@@ -193,15 +219,74 @@ function App() {
       .then((r) => r.json())
       .then((json) => {
         const newAppt = formatAppt([json]);
-        console.log('post new appt return',newAppt)
+        console.log("post new appt return", newAppt);
         setTaskTimes([...taskTimes, ...newAppt]);
       });
   }
   console.log(taskTimes);
+
+  function renderPriority(priority) {
+    switch (priority) {
+      case 1:
+        return {
+          ...style,
+          backgroundColor: "#B8ACC8",
+          borderColor: "#D7483F",
+          borderWidth: 10,
+        };
+      case 2:
+        return {
+          ...style,
+          backgroundColor: "#B8ACC8",
+          borderColor: "#D7883F",
+          borderWidth: 10,
+        };
+      case 3:
+        return {
+          ...style,
+          backgroundColor: "#B8ACC8",
+          borderColor: "#EEE839",
+          borderWidth: 10,
+        };
+      case 4:
+        return {
+          ...style,
+          backgroundColor: "#B8ACC8",
+          borderColor: "#43DE35",
+          borderWidth: 10,
+        };
+      case 5:
+        return {
+          ...style,
+          backgroundColor: "#B8ACC8",
+          borderColor: "#3550DE",
+          borderWidth: 10,
+        };
+      default:
+        return { ...style, backgroundColor: "#B8ACC8" };
+    }
+  }
+
+  const Appointment = ({ data, children, style, ...restProps }) => (
+    <Appointments.Appointment
+      {...restProps}
+      style={renderPriority(data.priority)}
+    >
+      {children}
+      <h4 style={{ color: "black", textAlign: "center" }}>
+        <strong>Category:</strong> {data.category}
+      </h4>
+      <p style={{ color: "black", textAlign: "center" }}>
+        <strong>Description:</strong> {data.description}
+      </p>
+    </Appointments.Appointment>
+  );
+
   return (
     <div className="App">
       <header className="App-header"></header>
       <DateTime />
+      <PriorityGuide />
       <Paper>
         <Scheduler data={taskTimes}>
           <ViewState
@@ -214,10 +299,14 @@ function App() {
           <Toolbar />
           <ViewSwitcher />
           <AllDayPanel />
-          <Appointments />
+          <Appointments appointmentComponent={Appointment} />
           <EditingState onCommitChanges={onEdit} />
           <EditRecurrenceMenu />
-          <AppointmentTooltip showOpenButton showDeleteButton />
+          <AppointmentTooltip
+            showOpenButton
+            showDeleteButton
+            children={<h1>o</h1>}
+          />
           <AppointmentForm />
           <DragDropProvider />
           <ConfirmationDialog />
