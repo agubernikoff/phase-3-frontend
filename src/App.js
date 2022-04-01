@@ -319,7 +319,7 @@ function App() {
           <Appointments appointmentComponent={Appointment} />
           <EditingState onCommitChanges={onEdit} />
           <EditRecurrenceMenu />
-          <AppointmentTooltip showOpenButton showDeleteButton />
+          <AppointmentTooltip showOpenButton />
           <AppointmentForm />
           <DragDropProvider />
           <ConfirmationDialog />
