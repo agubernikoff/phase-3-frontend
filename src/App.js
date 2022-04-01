@@ -94,7 +94,7 @@ function formatAppt(json) {
         //"[propertyName: 'category:']": json.task_def.category,
         priority: json[i].priority_id,
         rRule: json[i].rRule,
-        category: renderCategory(json[i].category_id),
+        category: json[i].category_id,
         description: json[i].description,
       };
       console.log("objToPush:", objToPush);
@@ -103,6 +103,23 @@ function formatAppt(json) {
   }
   console.log("formatted array!!!!!", formattedArr);
   return formattedArr;
+}
+
+function format1Appt(json) {
+  const objToPush = {
+    startDate: json.task_times[0].startDate,
+    endDate: json.task_times[0].endDate,
+    title: json.title,
+    id: json.task_times[0].id,
+    allDay: !!json.task_times[0].allDay,
+    task_def_id: json.id,
+    //"[propertyName: 'category:']": json.task_def.category,
+    priority: json.priority_id,
+    rRule: json.rRule,
+    category: json.category_id,
+    description: json.description,
+  };
+  return objToPush;
 }
 
 function App() {
@@ -183,6 +200,7 @@ function App() {
   function patchAppt(eObj) {
     const id = Object.keys(eObj)[0];
     console.log(eObj[id]);
+    console.log(id);
     fetch(`http://localhost:9292/task_times/${id}`, {
       method: "PATCH",
       headers: {
@@ -192,7 +210,7 @@ function App() {
     })
       .then((r) => r.json())
       .then((json) => {
-        const updated = formatAppt(json);
+        const updated = format1Appt(json);
         console.log("updated:", updated);
         const updatedArr = taskTimes.map((task) => {
           console.log("taskid=", task.id, "id=", id);
@@ -202,7 +220,6 @@ function App() {
           }
           return task;
         });
-        console.log(updatedArr);
         setTaskTimes(updatedArr);
       });
   }
@@ -274,7 +291,7 @@ function App() {
     >
       {children}
       <p style={{ color: "black", textAlign: "center" }}>
-        <strong>Category:</strong> {data.category}
+        <strong>Category:</strong> {renderCategory(data.category)}
       </p>
       <p style={{ color: "black", textAlign: "center" }}>
         <strong>Description:</strong> {data.description}
@@ -302,11 +319,7 @@ function App() {
           <Appointments appointmentComponent={Appointment} />
           <EditingState onCommitChanges={onEdit} />
           <EditRecurrenceMenu />
-          <AppointmentTooltip
-            showOpenButton
-            showDeleteButton
-            children={<h1>o</h1>}
-          />
+          <AppointmentTooltip showOpenButton showDeleteButton />
           <AppointmentForm />
           <DragDropProvider />
           <ConfirmationDialog />
